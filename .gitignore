@@ -15,3 +15,5 @@ test-ledger/
 deployments/localnet.json
 # saved test keys of throwaway devnet accounts (scripts/lib/throwaway.mjs)
 .keys/
+# raw cargo test output used to build the IDL (may hold local paths)
+idl.out
