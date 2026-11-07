@@ -1,0 +1,123 @@
+/**
+ * Shared helpers for the scripts: cluster selection (localnet and devnet
+ * only — mainnet is refused), keys, PDAs, the Anchor program client.
+ */
+import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'node:fs';
+import {dirname, join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import anchor from '@anchor-lang/core';
+import {Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from '@solana/web3.js';
+
+export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+export const IDL = JSON.parse(readFileSync(join(ROOT, 'idl', 'fidora.json'), 'utf8'));
+export const PROGRAM_ID = new PublicKey(IDL.address);
+export const {BN} = anchor;
+
+const CLUSTERS = {
+  localnet: {rpc: 'http://127.0.0.1:8899', explorer: null},
+  devnet: {rpc: 'https://api.devnet.solana.com', explorer: 'https://explorer.solana.com'},
+};
+
+export function cluster(name, env = process.env) {
+  const c = CLUSTERS[name];
+  if (!c) throw new Error(`--cluster must be localnet or devnet (got ${name}); mainnet is never used by these scripts`);
+  const rpc = name === 'devnet' ? (env.RPC_URL_DEVNET || c.rpc) : (env.RPC_URL_LOCALNET || c.rpc);
+  if (/mainnet/i.test(rpc)) throw new Error(`refusing ${rpc}: mainnet`);
+  return {name, rpc, connection: new Connection(rpc, 'confirmed'), explorer: c.explorer};
+}
+
+export const arg = (n) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : undefined);
+export const flag = (n) => process.argv.includes(`--${n}`);
+
+export const readKeypair = (path) => Keypair.fromSecretKey(Uint8Array.from(JSON.parse(readFileSync(path, 'utf8'))));
+export function writeKeypair(path, kp) {
+  mkdirSync(dirname(path), {recursive: true});
+  writeFileSync(path, JSON.stringify(Array.from(kp.secretKey)), {mode: 0o600});
+}
+
+/**
+ * The account that pays and owns the deployment. Localnet: a key kept in
+ * .localnet/ (gitignored), created and airdropped on first use. Devnet:
+ * FIDORA_DEPLOYER_KEYPAIR names a keypair file (never in the repo).
+ */
+export async function deployer(c, env = process.env) {
+  if (c.name === 'localnet') {
+    const p = join(ROOT, '.localnet', 'deployer-keypair.json');
+    if (!existsSync(p)) writeKeypair(p, Keypair.generate());
+    const kp = readKeypair(p);
+    if ((await c.connection.getBalance(kp.publicKey)) < 50 * LAMPORTS_PER_SOL) await airdrop(c, kp.publicKey, 100);
+    return kp;
+  }
+  if (!env.FIDORA_DEPLOYER_KEYPAIR) throw new Error('FIDORA_DEPLOYER_KEYPAIR must name the devnet deployer keypair file (in .env)');
+  return readKeypair(env.FIDORA_DEPLOYER_KEYPAIR);
+}
+
+export async function airdrop(c, to, sol) {
+  const sig = await c.connection.requestAirdrop(to, sol * LAMPORTS_PER_SOL);
+  await c.connection.confirmTransaction(sig, 'confirmed');
+}
+
+export function program(c, payer) {
+  const wallet = {
+    publicKey: payer.publicKey,
+    payer,
+    signTransaction: async (tx) => {
+      if ('version' in tx) tx.sign([payer]);
+      else tx.partialSign(payer);
+      return tx;
+    },
+    signAllTransactions: async (txs) => {
+      for (const tx of txs) {
+        if ('version' in tx) tx.sign([payer]);
+        else tx.partialSign(payer);
+      }
+      return txs;
+    },
+  };
+  const provider = new anchor.AnchorProvider(c.connection, wallet, {commitment: 'confirmed', preflightCommitment: 'confirmed'});
+  return new anchor.Program(IDL, provider);
+}
+
+const u64le = (n) => {
+  const b = Buffer.alloc(8);
+  b.writeBigUInt64LE(BigInt(n));
+  return b;
+};
+export const pda = {
+  config: () => PublicKey.findProgramAddressSync([Buffer.from('config')], PROGRAM_ID)[0],
+  vault: () => PublicKey.findProgramAddressSync([Buffer.from('vault')], PROGRAM_ID)[0],
+  agent: (id) => PublicKey.findProgramAddressSync([Buffer.from('agent'), u64le(id)], PROGRAM_ID)[0],
+  job: (id) => PublicKey.findProgramAddressSync([Buffer.from('job'), u64le(id)], PROGRAM_ID)[0],
+  wallet: (pk) => PublicKey.findProgramAddressSync([Buffer.from('wallet'), new PublicKey(pk).toBuffer()], PROGRAM_ID)[0],
+};
+
+/** sha256 as the 32-byte array the program stores. */
+export const sha = (s) => Array.from(createHash('sha256').update(s).digest());
+
+export function params(slug) {
+  const on = JSON.parse(readFileSync(join(ROOT, 'config', `params.${slug}.json`), 'utf8')).onchain;
+  const bn = (v) => new BN(String(v));
+  return {
+    protocolFeeBps: on.protocol_fee_bps,
+    minFee: bn(on.min_fee),
+    minJobAmount: bn(on.min_job_amount),
+    maxJobAmount: bn(on.max_job_amount),
+    fastPathMax: bn(on.fast_path_max),
+    reviewWindow: bn(on.review_window),
+    maxAcceptWindow: bn(on.max_accept_window),
+    maxWorkWindow: bn(on.max_work_window),
+    disputeTimeout: bn(on.dispute_timeout),
+    bondBps: on.bond_bps,
+    minBond: bn(on.min_bond),
+    disputeBondBps: on.dispute_bond_bps,
+    minDisputeBond: bn(on.min_dispute_bond),
+    minStake: bn(on.min_stake),
+    withdrawDelay: bn(on.withdraw_delay),
+    defaultPerTaskCap: bn(on.default_per_task_cap),
+    defaultDailyCap: bn(on.default_daily_cap),
+  };
+}
+
+export const deploymentFile = (slug) => join(ROOT, 'deployments', `${slug}.json`);
+export const readDeployment = (slug) => JSON.parse(readFileSync(deploymentFile(slug), 'utf8'));

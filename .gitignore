@@ -1,0 +1,17 @@
+/target/
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+# local validator ledger
+.ledger/
+test-ledger/
+# program keypairs never live in the repo
+*-keypair.json
+
+# per-run local state
+.localnet/
+deployments/localnet.json
+# saved test keys of throwaway devnet accounts (scripts/lib/throwaway.mjs)
+.keys/

@@ -1,0 +1,17 @@
+{
+  "name": "fidora-solana-programs-tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node tooling for the Fidora program: deploy, live checks, IDL assembly.",
+  "license": "MIT",
+  "scripts": {
+    "verify": "node scripts/verify-solana.mjs",
+    "sweep:devnet": "node --env-file=.env scripts/sweep-devnet.mjs"
+  },
+  "dependencies": {
+    "@anchor-lang/core": "1.2.2",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.99.0"
+  }
+}
