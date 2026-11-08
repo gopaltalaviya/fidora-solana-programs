@@ -1,0 +1,14 @@
+{
+  "cluster": "devnet",
+  "programId": "5pND3A7Xqibq5h9XxY7YtuoJ5TomYKn79usirDBysNRg",
+  "deployedAt": "2026-11-08T03:47:12.839Z",
+  "startSlot": 519890319,
+  "accounts": {
+    "config": "4XzNRdtZo4RWWGNFJx2MoDYQ8qfHyrNk3nCkgCJ6E7dD",
+    "vault": "2jc5eNfZxhWQ6Da5kR7JpF86kDYyCum9JQrF6cGNC8yu",
+    "paymentMint": "34rRkNq7UHkyKXdXSML899EcHKN11PFUR1P9ft94QTtA",
+    "arbiter": "2m9UHYVSk6V7ErSycjhQdev2RqjGymYsgx2aozhC19eG",
+    "owner": "2m9UHYVSk6V7ErSycjhQdev2RqjGymYsgx2aozhC19eG"
+  },
+  "arbiterKind": "deployer key (not a multisig)"
+}

@@ -48,7 +48,7 @@ You need the Solana CLI (`solana-test-validator`) and Node 22+.
 ```sh
 npm ci
 solana-test-validator --reset --bind-address 127.0.0.1 --dynamic-port-range 18000-18200 \
-  --bpf-program VkxrZbgyAXRn5mAAy5SscctDRmMp2AVsmvmsiPD5Uku artifacts/fidora.so &
+  --bpf-program 5pND3A7Xqibq5h9XxY7YtuoJ5TomYKn79usirDBysNRg artifacts/fidora.so &
 node scripts/deploy.mjs --cluster localnet        # → "wrote deployments/localnet.json"
 node scripts/verify-solana.mjs --cluster localnet # → "verify-solana: 23 checks passed on localnet"
 ```
@@ -106,8 +106,24 @@ to the deployer: the SOL, plus the rent of their token accounts. The same
 happens at the start of the next run, in case a run stopped half-way. To
 sweep by hand: `npm run sweep:devnet`.
 
-**Not deployed to devnet yet.** It is waiting for devnet SOL in the owner's
-wallet. The scripts refuse mainnet.
+**Deployed on devnet** (2026-11-08), `deployments/devnet.json`:
+
+| | Address |
+|---|---|
+| Program | [`5pND3A7Xqibq5h9XxY7YtuoJ5TomYKn79usirDBysNRg`](https://explorer.solana.com/address/5pND3A7Xqibq5h9XxY7YtuoJ5TomYKn79usirDBysNRg?cluster=devnet) |
+| Upgrade authority, owner, arbiter (the deployer) | `2m9UHYVSk6V7ErSycjhQdev2RqjGymYsgx2aozhC19eG` |
+| Config | `4XzNRdtZo4RWWGNFJx2MoDYQ8qfHyrNk3nCkgCJ6E7dD` |
+| Vault | `2jc5eNfZxhWQ6Da5kR7JpF86kDYyCum9JQrF6cGNC8yu` |
+| Test USDC mint | `34rRkNq7UHkyKXdXSML899EcHKN11PFUR1P9ft94QTtA` |
+
+`verify-solana --cluster devnet`: 21 checks passed on devnet, each with its
+explorer link. `auto_approve` and `expire_dispute` wait out 10-minute and
+1-hour windows there, so they are checked on localnet (23/23).
+
+The public devnet RPC answers bursts with 429, and refuses a batch of 10 or
+more `getTransaction` calls outright. The scripts wait those out
+(`patientFetch` in `scripts/lib/fidora.mjs`); a private devnet RPC in
+`RPC_URL_DEVNET` avoids the waits. The scripts refuse mainnet.
 
 ## Licence
 

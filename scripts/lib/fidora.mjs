@@ -24,7 +24,32 @@ export function cluster(name, env = process.env) {
   if (!c) throw new Error(`--cluster must be localnet or devnet (got ${name}); mainnet is never used by these scripts`);
   const rpc = name === 'devnet' ? (env.RPC_URL_DEVNET || c.rpc) : (env.RPC_URL_LOCALNET || c.rpc);
   if (/mainnet/i.test(rpc)) throw new Error(`refusing ${rpc}: mainnet`);
-  return {name, rpc, connection: new Connection(rpc, 'confirmed'), explorer: c.explorer};
+  const connection = name === 'localnet'
+    ? new Connection(rpc, 'confirmed')
+    : new Connection(rpc, {commitment: 'confirmed', fetch: patientFetch, disableRetryOnRateLimit: true});
+  return {name, rpc, connection, explorer: c.explorer};
+}
+
+/**
+ * The public devnet endpoint answers bursts with 429. web3.js's own retry
+ * gives up after ~15 s, which a 23-check run outlasts; this one waits up to
+ * ~4 minutes per request (1, 2, 4 … capped at 30 s, plus jitter), and only on
+ * 429: a dropped connection (a fetch TypeError) is retried the same way; every other status and error is returned unchanged.
+ */
+export async function patientFetch(url, init) {
+  for (let attempt = 0; ; attempt++) {
+    let res;
+    try {
+      res = await fetch(url, init);
+    } catch (e) {
+      // A dropped connection (undici: "fetch failed") under load: retried too.
+      if (attempt >= 12 || !(e instanceof TypeError)) throw e;
+      await new Promise((r) => setTimeout(r, Math.min(30_000, 1000 * 2 ** attempt) + Math.random() * 500));
+      continue;
+    }
+    if (res.status !== 429 || attempt >= 12) return res;
+    await new Promise((r) => setTimeout(r, Math.min(30_000, 1000 * 2 ** attempt) + Math.random() * 500));
+  }
 }
 
 export const arg = (n) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : undefined);

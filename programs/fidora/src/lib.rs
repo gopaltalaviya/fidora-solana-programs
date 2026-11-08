@@ -32,7 +32,7 @@ use errors::FidoraError;
 use events::*;
 use state::*;
 
-declare_id!("VkxrZbgyAXRn5mAAy5SscctDRmMp2AVsmvmsiPD5Uku");
+declare_id!("5pND3A7Xqibq5h9XxY7YtuoJ5TomYKn79usirDBysNRg");
 
 fn now_s() -> Result<u64> {
     Ok(Clock::get()?.unix_timestamp.max(0) as u64)
