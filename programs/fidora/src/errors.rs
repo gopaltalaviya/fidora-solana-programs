@@ -1,6 +1,6 @@
-//! Refusals. The names are the ones Pactora uses on NEAR and AgentX v3 on
-//! EVM wherever the rule is the same, so the backend maps a refusal to one
-//! meaning on every chain.
+//! Refusals. The names are the ones the earlier editions of the protocol use
+//! wherever the rule is the same, so the backend maps a refusal to one
+//! meaning in every edition.
 
 use anchor_lang::prelude::*;
 

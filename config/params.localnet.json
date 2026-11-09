@@ -1,5 +1,5 @@
 {
-  "_comment": "Local solana-test-validator only. Same values as Pactora's NEAR sandbox: review window, dispute timeout and withdraw delay are 10 s so verify-solana and the demo run every exit path in seconds. Amounts are base units of a 6-decimal test USDC.",
+  "_comment": "Local solana-test-validator only. Same values as the earlier edition's sandbox: review window, dispute timeout and withdraw delay are 10 s so verify-solana and the demo run every exit path in seconds. Amounts are base units of a 6-decimal test USDC.",
   "onchain": {
     "protocol_fee_bps": 100,
     "min_fee": 100,

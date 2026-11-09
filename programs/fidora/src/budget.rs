@@ -1,4 +1,4 @@
-//! The rolling 24 h spend cap, ported line for line from Pactora on NEAR
+//! The rolling 24 h spend cap, ported line for line from the earlier edition of the protocol
 //! (itself from v3 `AgentAccountCore`). Pure functions over `Purse`, so they
 //! are tested without a chain.
 

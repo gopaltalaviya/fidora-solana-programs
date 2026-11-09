@@ -4,7 +4,7 @@
 use anchor_lang::prelude::*;
 
 /// Hourly buckets in the rolling 24 h window. 25, not 24, so a spend counts
-/// for between 24 and 25 hours and never for less (same as Pactora and v3).
+/// for between 24 and 25 hours and never for less (same as the earlier editions).
 pub const BUCKETS: u64 = 25;
 pub const HOUR: u64 = 3_600;
 /// Longest any window may be: one year.

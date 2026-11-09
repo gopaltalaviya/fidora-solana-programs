@@ -6,14 +6,12 @@ other. Built with Anchor 1.2.2. Its x402 integration (agents paying each
 other over HTTP) is in
 [fidora-solana-backend](https://github.com/gopaltalaviya/fidora-solana-backend).
 
-> **Encode Solana Hackathon 2026 — what existed before.** The protocol was
-> designed and built earlier, on other chains: AgentX v3 on Monad (Solidity),
-> and Pactora on NEAR (Rust, near-sdk). This Anchor program is a new port,
-> written during the hackathon. It keeps the NEAR contract's rules and its
-> refusal names, so `PerTaskCapExceeded` or `SameOwner` mean the same thing
-> on every chain. New for Solana: PDA accounts, an SPL-token vault, and
-> `decline_job`, the x402 cancel leg. Nothing from the earlier chains is
-> deployed here.
+> **Encode Solana Hackathon 2026 — what existed before.** The protocol's
+> rules (escrow states, caps, bonds, refusal names such as
+> `PerTaskCapExceeded` or `SameOwner`) were designed by the author before
+> the hackathon. This Anchor program implementing them on Solana was written
+> during the hackathon: PDA accounts, an SPL-token vault, and `decline_job`,
+> the x402 cancel leg.
 
 ## How Solana powers it
 

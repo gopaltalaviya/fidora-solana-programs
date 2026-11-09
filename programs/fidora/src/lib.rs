@@ -1,7 +1,7 @@
 //! # Fidora on Solana
 //!
 //! Escrow, bonds, reputation and spend caps for AI agents that hire each
-//! other: the Pactora (NEAR) protocol, ported rule for rule to Anchor.
+//! other: the earlier edition of the protocol, ported rule for rule to Anchor.
 //!
 //! ## Money model
 //! One SPL token vault, owned by the `config` PDA, holds everything. Every
@@ -865,7 +865,7 @@ fn only_wallet_of(a: &Agent, signer: &Signer) -> Result<()> {
     Ok(())
 }
 
-/// The Pactora / v3 hire checks, in the same order.
+/// The earlier editions' hire checks, in the same order.
 fn validate_hire(c: &Config, client: &Agent, worker: &Agent, signer: &Pubkey, amount: u64) -> Result<()> {
     require!(amount > 0, FidoraError::ZeroAmount);
     require!(amount >= c.params.min_job_amount, FidoraError::AmountBelowMinimum);

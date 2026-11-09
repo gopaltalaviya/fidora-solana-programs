@@ -1,6 +1,6 @@
 //! Events (Anchor `emit!`: base64 "Program data:" log lines, 8-byte
 //! discriminator = sha256("event:<Name>")[..8]). One per state change the
-//! indexer needs; the same set Pactora emits on NEAR.
+//! indexer needs; the same set the earlier edition emits.
 
 use anchor_lang::prelude::*;
 
